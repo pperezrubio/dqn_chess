@@ -1,3 +1,5 @@
+import numpy as np
+
 class Environment(object):
     # OOP for an 'environment' in the reinforcement learning sense. 
     def __init__(self, state_shape, n_actions, episodic = True):
@@ -40,7 +42,30 @@ class Episodic(Environment):
 
     def is_terminal(self, state):
         raise NotImplementedError("Episodic task needs is_terminal().")
+
+class Policy(object):
+    def __init__(self, environment):
+        self.env = environment
+        self.state_shape = environment.state_shape
+        self.n_actions = environment.n_actions
         
+    def action(state):
+        raise NotImplementedError("Policy needs mapping from state to action")
 
+def EpsilonGreedy(Policy):
+    def __init__(self, epsilon_init, environment):
+        super(EpsilonGreedy, self).__init__(environment)
+        self.espilon = epsilon_init
 
+    def random_action(self):
+        return np.random.randint(self.n_actions)
+        
+    def greedy_action(self, state):
+        raise NotImplementedError("EpsilonGreedy policy needs greedy_action()")
+    
+    def action(self, state):
+        if np.random.binomial(1,self.epsilon):
+            return self.random_action()
+        else:
+            return self.greedy_action()
         

@@ -1,9 +1,3 @@
-from Chessnut import Game
-from Chessnut.game import InvalidMove
-from sunfish.xboard import parseFEN, mrender
-from sunfish.sunfish import search,render
-from pprint import pprint
-import numpy as np
 import string
 import pylab
 
@@ -88,13 +82,6 @@ def tadd(x, y):
     else:
         raise RuntimeError("Can only add tuples with equal length.")
 
-# parse 
-def parse_state(fen):
-    rows = parseFEN(fen).board.split('\n')[1:9]
-    stripped = [r.strip() for r in rows]
-    pieces = [[PIECE_DICT[p] for p in list(r)] for r in stripped]
-    return np.asarray(pieces)
-
 def matpos_to_fen(rc):
     y,x = rc
     try:
@@ -102,6 +89,5 @@ def matpos_to_fen(rc):
     except:
         raise ValidError(rc)
 
-def render_state(fen,c=1):
-    pylab.imshow(parse_state(fen).transpose(2,0,1)[c,:,:], interpolation='nearest')
+
 

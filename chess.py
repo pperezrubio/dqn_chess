@@ -5,6 +5,9 @@ from sunfish.xboard import parseFEN, mrender
 from sunfish.sunfish import search
 import numpy as np
 
+# TODO - check for stalemate by repetition. In the meantime,
+#      --> just have a max_n_moves allowed. 
+
 # formulate chess game as Episodic environment. 
 class ChessGame(Episodic):
     def __init__(self):
@@ -33,6 +36,7 @@ class ChessGame(Episodic):
             raise RuntimeError("Internal Error. STATUS not in [0-3]")
         return "Chess game%s" %status_str
 
+    # print the board for fun. 
     def _print_board(self):
         if self._num_moves %2 == 0:
             print parseFEN(str(self.game)).board
@@ -49,6 +53,7 @@ class ChessGame(Episodic):
         nxt_location = tadd(piece_location, offset)
         return ''.join(map(matpos_to_fen, [piece_location, nxt_location]))
 
+    # check if a move is valid.
     def _is_valid(self, fen_move):
         return fen_move in self.game.get_moves()
 
@@ -69,17 +74,24 @@ class ChessGame(Episodic):
                 if state[loc][1] != 0:
                     self._pc_locs[piece] = 'x'
 
+    # are there only kings on the board? 
     def _only_kings(self):
         return np.sum(np.asarray(self.get_state()[:,:,0]!=-1, dtype=int))==2
         
+    # get a move from the bot. 
     def _sunfish_move(self, search_depth = 20):
         color = 0 if self.game.state.player == 'w' else 1
         pos = parseFEN(str(self.game))
         m,_ = search(pos, search_depth)
         return mrender(color, pos, m)
 
+    # get game state in FEN notation
     def _as_fen(self):
         return str(self.game)
+
+    # random valid move for debugging.
+    def _rand_valid(self):
+        return np.random.choice(self.game.get_moves())
 
     # just for debugging.
     def _move(self, fen):
@@ -92,7 +104,7 @@ class ChessGame(Episodic):
         pieces = [[PIECE_DICT[p] for p in list(r)] for r in stripped]
         return np.asarray(pieces)
 
-    def is_terminal(self, state):
+    def is_terminal(self):
         if self._only_kings():
             self._STATUS = 3
         return self._STATUS not in [0,1]
@@ -132,7 +144,7 @@ class ChessGame(Episodic):
             # update status (i.e. check for checkmate)
             self._STATUS = self.game.status
             # check if state is terminal.
-            if self.is_terminal(self.get_state()):
+            if self.is_terminal():
                 if self._STATUS == 3: # draw
                     reward = self.DRAW_REWARD
                     self.episode_rewards.append(reward)

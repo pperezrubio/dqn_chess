@@ -1,5 +1,5 @@
 from rl import Episodic
-from execution import ALL_MOVES, PIECE_LOC, LOC_PIECE, PIECE_DICT, tadd, matpos_to_fen, CaptureError
+from execution import ALL_MOVES, PIECE_LOC, PIECE_DICT, tadd, matpos_to_fen, CaptureError
 from Chessnut import Game
 from sunfish.xboard import parseFEN, mrender
 from sunfish.sunfish import search
@@ -15,7 +15,6 @@ class ChessGame(Episodic):
         self.DRAW_REWARD = -5
         self.WIN_REWARD = 10
         self._pc_locs = PIECE_LOC.copy()
-#        self._loc_pcs = LOC_PIECE.copy()
         self._num_moves = 0
         self._STATUS = 0
 

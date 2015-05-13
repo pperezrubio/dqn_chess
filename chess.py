@@ -1,5 +1,5 @@
 from rl import Episodic
-from execution import ALL_MOVES, PIECE_LOC, PIECE_DICT, tadd, matpos_to_fen, CaptureError
+from execution import ALL_MOVES, PIECE_LOC, PIECE_DICT, tadd, matpos_to_fen, CaptureError, ValidError
 from Chessnut import Game
 from sunfish.xboard import parseFEN, mrender
 from sunfish.sunfish import search
@@ -17,15 +17,16 @@ class ChessGame(Episodic):
         self._pc_locs = PIECE_LOC.copy()
         self._num_moves = 0
         self._STATUS = 0
+        self._reward_history = []
 
     def __str__(self):
         status_str = '' 
         if self._STATUS == 0:
             status_str = ', in_progress.'
         elif self._STATUS == 1:
-            status_str = ', %s in check' %self.g.state.player
+            status_str = ', %s in check' %self.game.state.player
         elif self._STATUS == 2:
-            status_str = ', %s in checkmate' %self.g.state.player
+            status_str = ', %s in checkmate' %self.game.state.player
         elif self._STATUS == 3:
             status_str = ', ended in draw.' 
         else:
@@ -77,6 +78,9 @@ class ChessGame(Episodic):
         m,_ = search(pos, search_depth)
         return mrender(color, pos, m)
 
+    def _as_fen(self):
+        return str(self.game)
+
     # just for debugging.
     def _move(self, fen):
         self.game.apply_move(fen)
@@ -98,6 +102,10 @@ class ChessGame(Episodic):
         try:
             move = self._det_move(a_idx)
         except CaptureError:
+            reward = self.INVALID_MOVE_REWARD
+            self.episode_rewards.append(reward)
+            return reward
+        except ValidError:
             reward = self.INVALID_MOVE_REWARD
             self.episode_rewards.append(reward)
             return reward
@@ -153,5 +161,6 @@ class ChessGame(Episodic):
         # new game instance. 
         self.game = Game()
         self.avg_rewards.append(np.mean(self.episode_rewards))
+        self._reward_history.append(self.episode_rewards)
         self.episode_rewards = []
         self.episode_ctr += 1

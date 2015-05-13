@@ -13,17 +13,25 @@ class Environment(object):
         self.n_actions = n_actions
         # initialize state
 
+    def __str__(self):
+        episodic_str = ''
+        if self.episodic:
+            episodic_str = 'episodic '
+        return "%senvironment with state shape %s and %d actions" %(episodic_str, self.state_shape, self.n_actions)
+
     def get_state(self):
         raise NotImplementedError("Environment needs get_state().")
 
+    """
     def reward(self, state, action):
         # compute reward given state, action
         raise NotImplementedError("Environment needs reward().")
+    """
 
     def take_action(self, a_idx):
         # alter state 
-        # return reward
         # self.step_ctr += 1
+        # return reward
         raise NotImplementedError("Environment needs take_action().")
 
 class Episodic(Environment):

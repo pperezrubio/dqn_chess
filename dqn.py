@@ -35,7 +35,7 @@ class DQN(object):
         # for _ in range(n_episodes):
         #     g = self.game.new_game()
         #     s = g.get_state()
-        #     while not g.isTerminal():
+        #     while not g.isTerminal(s):
         #         if np.random.binomial(n=1,self.epsilon):
         #              a_idx = np.random.randint(self.game.n_actions)
         #              r = g.take_action(a_idx)

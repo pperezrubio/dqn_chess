@@ -79,7 +79,7 @@ class ChessGame(Episodic):
         return np.sum(np.asarray(self.get_state()[:,:,0]!=-1, dtype=int))==2
         
     # get a move from the bot. 
-    def _sunfish_move(self, search_depth = 20):
+    def _sunfish_move(self, search_depth = 5):
         color = 0 if self.game.state.player == 'w' else 1
         pos = parseFEN(str(self.game))
         m,_ = search(pos, search_depth)
@@ -110,6 +110,7 @@ class ChessGame(Episodic):
         return self._STATUS not in [0,1]
 
     def take_action(self, a_idx):
+        self.iter_ctr += 1
         self.step_ctr += 1
         try:
             move = self._det_move(a_idx)
@@ -176,3 +177,4 @@ class ChessGame(Episodic):
         self._reward_history.append(self.episode_rewards)
         self.episode_rewards = []
         self.episode_ctr += 1
+        self.iter_ctr = 0

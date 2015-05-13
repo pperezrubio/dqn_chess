@@ -18,6 +18,9 @@ class Memory(object):
         self.rt = rt
         self.stp1 = stp1
 
+    def __str__(self):
+        return "<Memory> w/ reward %d" %self.rt
+
     def target_pair(self, nn):
         # compute an (input, target) pair with respect to a neural network. 
         # parametrizing the action value function. 
@@ -39,6 +42,9 @@ class ExperienceReplay(object):
         self.max_size = max_size
         self.d = deque()
 
+    def __str__(self):
+        return "<Experience Replay> with %d memories." %self.size
+
     def pop(self):
         try:
             self.d.popleft()
@@ -52,6 +58,6 @@ class ExperienceReplay(object):
         self.d.append(memory)
         self.size += 1
         
-    def sample(self, N):
+    def sample(self, N=1):
         return np.random.choice(self.d, N, replace=True)
 

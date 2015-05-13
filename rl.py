@@ -37,6 +37,7 @@ class Environment(object):
 class Episodic(Environment):
     def __init__(self, state_shape, n_actions):
         super(Episodic, self).__init__(state_shape, n_actions, episodic=True)
+        self.iter_ctr = 0
         self.episode_ctr = 0
         self.episode_rewards = []
         self.avg_rewards = []

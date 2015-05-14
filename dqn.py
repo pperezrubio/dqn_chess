@@ -13,7 +13,7 @@ class DQN(object):
     OOP for a Deep Q-Network (DQN). 
     """
     def __init__(self, game, memory_size = 100000, 
-                 batch_size = 200, epsilon_init = 1.0, alpha_init = .00025,
+                 batch_size = 1, epsilon_init = 1.0, alpha_init = .00025,
                  anneal_alpha = True, anneal_epsilon = True, 
                  batch_size_incr = 0):
         self.memories = ExperienceReplay(memory_size)
@@ -48,7 +48,7 @@ class DQN(object):
         for e_idx in range(n_episodes):
             s = g.get_state()
             print "Episode: %d, Exploration Rate: %f, Learning Rate: %f" %(e_idx, self.epsilon, self.alpha)
-            while not g.is_terminal() and not self.game._num_moves >= max_iter and not self.game.iter_ctr >= 10000:
+            while not g.is_terminal() and not self.game._num_moves >= max_iter and not self.game.iter_ctr >= 200:
                 if np.random.binomial(1,self.epsilon):
                     a_idx = np.random.randint(self.game.n_actions)
                 else:
@@ -107,11 +107,17 @@ class DQN(object):
 game = ChessGame()
 dqn = DQN(game)
 dqn.train(1000,50)
-plt.scatter(np.arange(len(dqn._pct_invalids)), dqn._pct_invalids)
-dqn.epsilon = .5
+plt.plot(dqn._pct_invalids)
+plt.figure()
+plt.plot(dqn._costs)
+dqn.game.reset()
+dqn._pct_invalids = []
+dqn._costs = []
+dqn.batch_size = 5
+dqn.epsilon = 0
 dqn.alpha = .00025
-dqn.game.search_depth = 20
-dqn.train(1000,200)
+dqn.game.search_depth = 5
+dqn.train(50,5)
 
 
 """

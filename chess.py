@@ -11,16 +11,18 @@ import numpy as np
 # formulate chess game as Episodic environment. 
 class ChessGame(Episodic):
     def __init__(self):
-        super(ChessGame, self).__init__((8,8,2),224)
+        super(ChessGame, self).__init__((2,8,8),224)
         self.game = Game()
-        self.INVALID_MOVE_REWARD = -1
-        self.LOSS_REWARD = -10
-        self.DRAW_REWARD = -5
-        self.WIN_REWARD = 10
+        self.INVALID_MOVE_REWARD = -.02
+        self.LOSS_REWARD = -1
+        self.DRAW_REWARD = -.5
+        self.WIN_REWARD = 1
+        self._search_depth = 1
         self._pc_locs = PIECE_LOC.copy()
         self._num_moves = 0
         self._STATUS = 0
         self._reward_history = []
+
 
     def __str__(self):
         status_str = '' 
@@ -79,7 +81,8 @@ class ChessGame(Episodic):
         return np.sum(np.asarray(self.get_state()[:,:,0]!=-1, dtype=int))==2
         
     # get a move from the bot. 
-    def _sunfish_move(self, search_depth = 5):
+    def _sunfish_move(self):
+        search_depth = self._search_depth
         color = 0 if self.game.state.player == 'w' else 1
         pos = parseFEN(str(self.game))
         m,_ = search(pos, search_depth)
@@ -131,6 +134,7 @@ class ChessGame(Episodic):
         else:
             # update state (carry out move)
             self.game.apply_move(move)
+
             # increment move counter
             self._num_moves += 1 
             # compute location updates. 
@@ -162,7 +166,7 @@ class ChessGame(Episodic):
                 else:
                     raise RuntimeError("Internal error: invalid status.")
             else:
-                reward = 0 # non-terminal, valid action.
+                reward = .1 # non-terminal, valid action.
                 self.episode_rewards.append(reward)
                 return reward
     

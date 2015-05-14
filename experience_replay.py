@@ -24,12 +24,13 @@ class Memory(object):
     def target_pair(self, nn):
         # compute an (input, target) pair with respect to a neural network. 
         # parametrizing the action value function. 
-        current_out = nn.output(st)
-        nxt_out = nn.output(stp1)
+        # assumes minibatch size 1.
+        current_out = nn.outputter(self.st)[0]
+        nxt_out = nn.outputter(self.stp1)[0]
         target = current_out.copy()
         # target is only different for the action chosen. 
-        target[at] = np.max(nn.output(stp1)) + rt
-        return (st, target)
+        target[self.at] = np.max(nxt_out) + self.rt
+        return (self.st, target)
 
 class ExperienceReplay(object):
     """

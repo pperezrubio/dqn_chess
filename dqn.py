@@ -66,7 +66,7 @@ class DQN(object):
 
                 # TEST CLOOJ
                 if self.game.iter_ctr %200 == 0:
-                    print "move_n: %d, action: %d, reward: %d, status: %d" %(
+                    print "move_n: %d, action: %d, reward: %f, status: %d" %(
                         self.game.iter_ctr, a_idx, r, self.game._STATUS
                     )
                 
@@ -113,11 +113,11 @@ plt.plot(dqn._costs)
 dqn.game.reset()
 dqn._pct_invalids = []
 dqn._costs = []
-dqn.batch_size = 5
-dqn.epsilon = 0
+dqn.batch_size = 100
+dqn.epsilon = .2
 dqn.alpha = .00025
-dqn.game.search_depth = 5
-dqn.train(50,5)
+dqn.game.search_depth = 20
+dqn.train(100,10000)
 
 
 """

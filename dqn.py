@@ -41,14 +41,15 @@ class DQN(object):
         # set anneal rate for epsilon.
         ep_anneal_rate = 0
         if self.anneal_ep:
-            ep_anneal_rate = self.epsilon/n_episodes
+            ep_anneal_rate = float(self.epsilon)/n_episodes
         alpha_anneal_rate = 0
         if self.anneal_lr:
-            alpha_anneal_rate = self.alpha/n_episodes
+            alpha_anneal_rate = float(self.alpha)/n_episodes
         for e_idx in range(n_episodes):
             s = g.get_state()
             print "Episode: %d, Exploration Rate: %f, Learning Rate: %f" %(e_idx, self.epsilon, self.alpha)
             while not g.is_terminal() and not self.game._num_moves >= max_iter and not self.game.iter_ctr >= 200:
+                # epsilon-greedy action selection below
                 if np.random.binomial(1,self.epsilon):
                     a_idx = np.random.randint(self.game.n_actions)
                 else:
@@ -56,6 +57,7 @@ class DQN(object):
                     a_idx = np.argmax(values[0])
                 r = g.take_action(a_idx)
                 stp1 = g.get_state()
+                # Reshape states into shape expected by convnet. 
                 self.memories.insert(Memory(
                     s.transpose(2,0,1).reshape(self.nnet.image_shape), 
                     a_idx, 
@@ -70,21 +72,17 @@ class DQN(object):
                         self.game.iter_ctr, a_idx, r, self.game._STATUS
                     )
                 
-                # TODO - compute minibatch update
-                # //pseudocode
+                # Minibatch update. 
                 if e_idx > 0:
-                    costs = []
-                    data = self.memories.sample(self.batch_size)
-                    data = [m.target_pair(self.nnet) for m in data]
+                    costs = [] # local for this iter. 
+                    data = self.memories.sample(self.batch_size) # random (state, action, reward, nxt_state) sample from memory replay. 
+                    data = [m.target_pair(self.nnet) for m in data] # convert above tuple into training data, label pair. 
                     for i in range(self.batch_size):
                         d = data[i]
-                        costs.append(self.trainer(d[0], d[1], self.alpha))
-                    if self.game.iter_ctr%10 == 0:
-                        print "cost: %f" %(np.mean(costs))
-                        self._costs.append(np.mean(costs))
-                    if self.game.iter_ctr%500 == 0:
-                        self.game._print_board()
-            print "Game %d ends in %d iterations with status %d, reward %d." %(e_idx, self.game.iter_ctr, self.game._STATUS, r)
+                        costs.append(self.trainer(d[0], d[1], self.alpha)) # call trainer func
+                    self._costs.append(np.mean(costs))
+#            print "Game %d ends in %d iterations with status %d, reward %d." %(e_idx, self.game.iter_ctr, self.game._STATUS, r)
+
             # compute percent invalid actions.
             n_moves = g.iter_ctr
             rs = g.episode_rewards
@@ -104,51 +102,15 @@ class DQN(object):
 # Input is two channel matrix representation of game state
 # Output is estimate of value for each action. 
 
-game = ChessGame()
-dqn = DQN(game)
-dqn.train(1000,50)
-plt.plot(dqn._pct_invalids)
-plt.figure()
-plt.plot(dqn._costs)
-dqn.game.reset()
-dqn._pct_invalids = []
-dqn._costs = []
-dqn.batch_size = 100
-dqn.epsilon = .2
-dqn.alpha = .00025
-dqn.game.search_depth = 20
-dqn.train(100,10000)
+def main():
+    game = ChessGame()
+    dqn = DQN(game)
+    dqn.train(1000,50)
+    return dqn
+
+def results(dqn):
+    plt.plot(dqn._pct_invalids)
+    plt.plot(dqn._costs)
+    plt.figure()
 
 
-"""
-dqn.batch_size_incr = 0
-dqn.alpha = .1
-dqn.epsilon = .8
-dqn.train(1,1000)
-dqn.alpha = .2
-dqn.epsilon = .48
-dqn.train(40,1000)
-dqn.alpha = .1
-dqn.epsilon = .5
-dqn.game.search_depth = 5
-dqn.train(20,10000)
-dqn.alpha = .1
-dqn.epsilon = .5
-dqn.game.search_depth = 20
-dqn.train(20,10000)
-dqn.alpha = .1
-dqn.epsilon = .5
-dqn.game.search_depth = 20
-dqn.train(20,10000)
-"""
-
-"""
-dqn.alpha = .1
-dqn.epsilon = .2
-dqn.train(20,10000)
-dqn.alpha = .1
-dqn.epsilon = .2
-dqn.train(20,10000)
-dqn.alpha = .05
-dqn.epsilon = .05
-"""    
